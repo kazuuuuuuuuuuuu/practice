@@ -1,2 +1,2 @@
 # practice
-to do list -> c++ console program 
+my onw repository
