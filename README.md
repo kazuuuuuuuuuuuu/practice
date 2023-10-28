@@ -1,2 +1,2 @@
 # practice
-my onw repository
+my own repository
