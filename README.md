@@ -1,2 +1,2 @@
 # practice
-my own repository
+to do list -> c++ console program 
