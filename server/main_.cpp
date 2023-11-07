@@ -1,3 +1,6 @@
+// server project 
+// Virtual server -> setting from the router
+
 #include<stdio.h>
 #include<WinSock2.h>
 #include<sys/types.h>
@@ -54,7 +57,8 @@ int startup(unsigned short* port_num)
 	memset(&addr_server, 0, sizeof(addr_server));
 	addr_server.sin_family = PF_INET; // internet type
 	addr_server.sin_port = htons(*port_num); // internet byte order conversion
-	addr_server.sin_addr.s_addr = htonl(INADDR_ANY);
+	//Set IP address to INADDR_ Any, indicating binding to all available network interfaces 
+	addr_server.sin_addr.s_addr = htonl(INADDR_ANY); // binding to my current ip
 
 
 	// 4 bind socket with ip address
@@ -135,13 +139,65 @@ void unimplement(int client)
 	// return a message to the specified connection socket that the method has not been implemented yet
 }
 
+// 404 page
 void not_found(int client)
 {
 	// return a message that the page requested was not found
-	printf("some get there -> not found\n");
+	printf("some get there -> 404 not found\n");
+
+	// send the header of the respond
+	char buff[1024];
+	// based on the http protocol
+	// first line -> protocol, status code
+	strcpy(buff, "HTTP/1.0 404 NOT FOUND\r\n");
+	send(client, buff, strlen(buff), 0);
+
+	// second line -> information about server
+	strcpy(buff, "Server: Kazu/0.1\r\n");
+	send(client, buff, strlen(buff), 0);
+
+	// third line -> type of the content
+	strcpy(buff, "Content-type:text/html\n");
+	send(client, buff, strlen(buff), 0);	
+
+	strcpy(buff, "\r\n");
+	send(client, buff, strlen(buff), 0);	
+
+	// send the content of the 404 page 
+	// \ -> continuation character
+	strcpy(buff, 
+	"<HTML>\
+		<TITLE>NOT FOUND</TITLE>\
+		<BODY>\
+			<H2>The resource is unavailable.</H2>\
+			<img src=\"404.png\" />\
+		</BODY>\
+	</HTML>");
+	send(client, buff, strlen(buff), 0);	
+	
 }
 
-void headers(int client)
+// get the type of file user requested -> text or image
+// respond header needed the information to fill out
+const char* getHeadType(const char* fileName)
+{
+	// default
+	const char *ret = "text/html";
+	// check out the suffix
+	const char *p = strrchr(fileName, '.');
+	if(!p) return ret;
+
+	p++;
+	if(!strcmp(p, "css")) ret = "text/css";
+	else if(!strcmp(p, "jpg")) ret = "image/jpeg";
+	else if(!strcmp(p, "png")) ret = "image/png";
+	else if(!strcmp(p, "js")) ret = "application/x-javascript";
+
+	return ret;
+}
+
+// response header
+void headers(int client, const char* type)
 {
 	// send the header of the respond
 	char buff[1024];
@@ -155,8 +211,9 @@ void headers(int client)
 	send(client, buff, strlen(buff), 0);
 
 	// third line -> type of the content
-	strcpy(buff, "Content-type:text/html\n");
-	send(client, buff, strlen(buff), 0);	
+	char buf[1024];
+	sprintf(buf, "Content-type: %s\r\n", type);
+	send(client, buf, strlen(buf), 0);	
 
 	strcpy(buff, "\r\n");
 	send(client, buff, strlen(buff), 0);	
@@ -186,19 +243,33 @@ void cat(int client, FILE *resource)
 }
 
 // send the static resource
+// favicon.ico is the default resource the browser requested ->  can be escaped -> modify the html file
 void server_file(int client, const char *fileName)
 {
 	int num_chars = 1;
 	char buff[1024];
-	// clean up the user request data
-	while(num_chars>0&&strcmp(buff, "\n"))
+	// before send file, clean up the data from the user request header 
+	while(num_chars>0 && strcmp(buff, "\n"))
 	{
 		num_chars = get_line(client, buff, sizeof(buff));
-		PRINTF(buff);
+		if(strcmp(buff, "\n"))
+			PRINTF(buff);
 	}
 
-	// the type FILE -> a structure including some information about that file 
-	FILE *resource = fopen(fileName, "r");
+
+	// the type FILE -> a structure including some information(entail file descriptor) about that file 
+	FILE *resource = NULL;
+	if(strcmp(fileName, "htdocs/index.html")==0)
+	{
+		// open as a text file
+		resource = fopen(fileName, "r");
+	}
+	else
+	{
+		// as a binary file(music, image, etc)
+		resource = fopen(fileName, "rb");
+	}
+
 	if(resource==NULL)
 	{
 		not_found(client);
@@ -207,7 +278,7 @@ void server_file(int client, const char *fileName)
 	{
 		// send resource to the user
 		// http header
-		headers(client);
+		headers(client, getHeadType(fileName));
 
 		// send the resource requested
 		cat(client, resource);
@@ -301,12 +372,11 @@ DWORD WINAPI accept_request(LPVOID arg)
 			num_chars = get_line(client, buff, sizeof(buff));
 		}
 		
-		printf("test!!!!!!!\n");
 		not_found(client);
 	}
 	else
 	{
-		// the rusult of the bit operation is a file type
+		// the rusult of the bit operation is a file type -> if it is a directory
 		if((status.st_mode & S_IFMT) == S_IFDIR)
 		{
 			strcat(path, "/index.html");
