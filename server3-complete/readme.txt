@@ -1,0 +1,4 @@
+My program achieves functionalities such as client connection monitoring, HTTP request parsing, static file
+serving, and CGI script execution. To enhance concurrent performance, I adopted a multi-threading model. The project introduces anonymous pipes for inter-process communication between the server and the CGI
+scripts, coping with POST requests. Throughout the development, I prioritized error handling, thread safety, and implemented basic security checks for incoming requests. Finally, I crafted a personal profile website
+using HTML and employed port forwarding, enabling users across the internet to access my resume website.
