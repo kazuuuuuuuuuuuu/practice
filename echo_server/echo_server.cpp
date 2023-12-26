@@ -17,7 +17,7 @@ int main(int argc, char const *argv[])
 	memset(&server_addr, 0, sizeof(sockaddr_in));
 	
 	server_addr.sin_family = AF_INET;
-	server_addr.sin_addr.s_addr = htonl(INADDR_ANY); // listen on that ip address -> INADDR_ANY indicates any ip incoming
+	server_addr.sin_addr.s_addr = htonl(INADDR_ANY); // listen on that ip address -> INADDR_ANY indicates any local ip available
 	server_addr.sin_port = htons(SERVER_PORT); // listen on that port number
 
 	// 3 bind the socket with that address 
