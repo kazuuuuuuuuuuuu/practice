@@ -6,9 +6,45 @@
 #include <stdint.h>
 #include <sys/wait.h>
 #include <sys/types.h>
+#include <fcntl.h>
+
+int daemon()
+{
+	// 1 fork()
+	switch(fork())
+	{
+	case -1:
+		return -1;
+	case 0:
+		break;
+	default:
+		// the parent process exit immediatly without cleaning
+		_exit(0);
+	}
+
+	// 2 Create a new session -> to disconnect association with terminal 
+	if(setsid()==-1)
+		return -1;
+
+	// 3 change working directory -> to avoid effecting file system
+	(void) chdir("/");
+
+	// 4 redirect to /dev/null
+	int fd;
+	if((fd=open("/dev/null", O_RDWR, 0))!=-1)
+	{
+		// (void) -> return value should be ignored
+		(void)dup2(fd, STDIN_FILENO);
+		(void)dup2(fd, STDOUT_FILENO);
+		(void)dup2(fd, STDERR_FILENO);
+		if(fd>2)
+			(void)close(fd);
+	}
+	return 0;
+}
 
 // function poiter renaming -> spawn_proc_pt the function pointer type
-// void * data -> universal pointer -> depands on the parameters needed for the callback function
+// void * data -> universal pointer ->  the type of parameter varies based on the callback function
 typedef void (*spawn_proc_pt) (void *data);
 static void worker_process_cycle(void *data);
 static void start_worker_processes(int n);
@@ -16,6 +52,9 @@ pid_t spawn_process(spawn_proc_pt proc, void *data, const char *name);
 
 int main(int argc, char const *argv[])
 {
+	// became a daemon process -> detach from terminal (optional)
+	daemon();
+	
 	start_worker_processes(4);
 	
 	// the master process manages child processes here

@@ -1,3 +1,4 @@
+daemon process -> detach from a terminal
 1 main:
 start the task -> start_worker_processes(4) -> specifies 4 child processes
 manage and recycle the child processes
