@@ -29,16 +29,16 @@ int daemon()
 	// 3 change working directory -> to avoid effecting file system
 	(void) chdir("/");
 
-	// 4 redirect to /dev/null
+	// 4 redirect to /dev/null -> devour everything
 	int fd;
 	if((fd=open("/dev/null", O_RDWR, 0))!=-1)
 	{
 		// (void) -> return value should be ignored
-		(void)dup2(fd, STDIN_FILENO);
+		(void)dup2(fd, STDIN_FILENO); // redirect std to /dev/null
 		(void)dup2(fd, STDOUT_FILENO);
 		(void)dup2(fd, STDERR_FILENO);
 		if(fd>2)
-			(void)close(fd);
+			(void)close(fd); // closing fd does not effect stdin, out, err 
 	}
 	return 0;
 }
@@ -109,7 +109,6 @@ static void worker_process_init(int worker)
 		fprintf(stderr, "sched_setaffinity() failed, worker: %d\n", worker);
 	}
 }
-
 
 void worker_process_cycle(void *data)
 {
