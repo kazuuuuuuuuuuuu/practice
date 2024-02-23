@@ -7,7 +7,7 @@ sem_t road;
 
 
 // thread function
-void *cars(void *argc)
+void *cars(void *arg)
 {
 	printf("%u intend to pass the fork\n", pthread_self());
 	sleep(1);
