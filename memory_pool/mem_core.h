@@ -18,8 +18,8 @@
 #include <string.h>
 #include <errno.h>
 
-typedef intptr_t ngx_int_t;
-typedef uintptr_t ngx_uint_t;
+typedef intptr_t ngx_int_t; // 它是一个整数类型，其大小足以容纳指针的位数，且可以用于存储指针值
+typedef uintptr_t ngx_uint_t; // 它是一个无符号整数类型，其大小足以容纳指针的位数，且可以用于存储指针值
 
 #define NGX_HAVE_POSIX_MEMALIGN 1
 #define NGX_DEBUG 1
@@ -27,8 +27,8 @@ typedef uintptr_t ngx_uint_t;
 
 // align -> align to 8 -> add 7 and zero out the last three bits (0..111 -> 7) 
 #define ngx_align(d, a) ( ((d) + (a-1)) & ~(a-1) )
-#define ngx_align_ptr(p, a) (u_char *) (( (uintptr_t) (p) + ((uintptr_t)a - 1 )) & ~((uintptr_t)a - 1))
-
+// convert pointers to numbers and calculate
+#define ngx_align_ptr(p, a) (u_char *) (( (uintptr_t) (p) + ((uintptr_t)a - 1 )) & ~((uintptr_t)a - 1)) 
 
 #include "mem_alloc.h"
 #include "mem_pool_palloc.h"

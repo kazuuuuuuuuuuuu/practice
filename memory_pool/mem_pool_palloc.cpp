@@ -48,8 +48,8 @@ static void *ngx_palloc_large(ngx_pool_t *pool, size_t size)
 		return NULL;
 	}
 
-	// 2 mount it to the linked list
-	// find a large node that has not been allocated
+	// 2 mount it to the linked list (big memory block)
+	// reuse a node whose alloc pointer has been freed
 	n = 0;
 	for(large=pool->large;large;large=large->next)
 	{
@@ -62,12 +62,13 @@ static void *ngx_palloc_large(ngx_pool_t *pool, size_t size)
 		// try most 3 times
 		if(n>3)
 		{
-			n ++;
 			break;
 		}
+		n ++;
 	}
 
-	// create a large node
+	// create a new node and mount it to the linked list
+	// the node is saved at the normal memory block
 	large = (ngx_pool_large_t *)ngx_palloc_small(pool, sizeof(ngx_pool_large_t), 1);
 	if(large == NULL)
 	{
@@ -94,6 +95,7 @@ static inline void *ngx_palloc_small(ngx_pool_t *pool, size_t size, ngx_uint_t a
 		m = p->d.last;
 		if(align)
 		{
+			// ngx_align_ptr -> the pointer alignment function
 			m = ngx_align_ptr(m, NGX_ALIGNMENT);
 		}
 		// 1 current block is enough
@@ -105,7 +107,7 @@ static inline void *ngx_palloc_small(ngx_pool_t *pool, size_t size, ngx_uint_t a
 		// 2 try next one
 		p = p->d.next;
 	}while(p);
-	// 3 all blocks are NOT enough, create a new block
+	// 3 all blocks are NOT enough, create a new block and allocate
 	return ngx_palloc_block(pool, size);
 }
 
@@ -115,7 +117,8 @@ static void *ngx_palloc_block(ngx_pool_t *pool, size_t size)
 	u_char *m;
 	size_t psize;
 	ngx_pool_t *p, *newp;
-	psize = (size_t) (pool->d.end - (u_char *)pool);
+
+	psize = (size_t) (pool->d.end - (u_char *)pool); // the size of the normal block 
 
 	// 1 allocate a new memory block
 	m = (u_char *)ngx_memalign(NGX_POOL_ALIGNMENT, psize);
@@ -123,33 +126,30 @@ static void *ngx_palloc_block(ngx_pool_t *pool, size_t size)
 	{
 		return NULL;
 	}
+
+	// 2 add the header -> only add the noral memory block structure
 	newp = (ngx_pool_t *) m;
-	newp->d.end = m + psize;
+	newp->d.end = m + psize; 
 	newp->d.next = NULL;
 	newp->d.failed = 0;
-
-	// 2 add the header -> only add the data memory block structure
-	m += sizeof(ngx_pool_data_t);
+	m += sizeof(ngx_pool_data_t); // only use the noral memory block structure
 	m = ngx_align_ptr(m, NGX_ALIGNMENT);
+	newp->d.last = m + size; // the memory allocated this time
 
-	// 3 leave space for allocation this time
-	newp->d.last = m + size;
-
-	// 4 update the failed value for every memory block before
-	for(p=pool->current;p->d.next;p=p->d.next)
+	// 3 update the failed value for every memory block before
+	for(p=pool->current;p->d.next;p=p->d.next) // p->d.next == NULL -> the last node
 	{
-		p->d.failed ++;
-		if(p->d.failed>4)
+		if(p->d.failed++>4)
 		{
 			pool->current = p->d.next;
 		}
 	}
-	// p->d.next == NULL -> the last node
-	// 5 mount the new one to the linked list
+	// 4 mount the new one after the last node
 	p->d.next = newp;
 	return m;
 }
 
+// free a specific large memory block
 ngx_int_t ngx_pfree(ngx_pool_t *pool, void *p)
 {
 	ngx_pool_large_t *l;
@@ -173,6 +173,7 @@ void ngx_destroy_pool(ngx_pool_t *pool)
 	ngx_pool_t *p, *n;
 	ngx_pool_large_t *l;
 
+// print out address info for both normal memory blocks and big memory blocks
 #if(NGX_DEBUG)
 	for(l=pool->large;l;l->next)
 	{
@@ -209,6 +210,7 @@ void ngx_reset_pool(ngx_pool_t *pool)
 	ngx_pool_t *p;
 	ngx_pool_large_t *l;
 
+	// free big memory block
 	for(l=pool->large;l;l->next)
 	{
 		if(l->alloc)
@@ -217,6 +219,7 @@ void ngx_reset_pool(ngx_pool_t *pool)
 		}
 	}
 
+	// reset the beginning address for allocation
 	pool->d.last = (u_char *)pool + sizeof(ngx_pool_t);
 	pool->d.failed = 0; 
 	for(p=pool->d.next;p;p=p->d.next)

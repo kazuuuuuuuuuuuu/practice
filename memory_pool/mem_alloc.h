@@ -8,9 +8,9 @@ void *ngx_calloc(size_t size);
 
 // Conditional Preprocessing Instructions
 #if(NGX_HAVE_POSIX_MEMALIGN||NGX_HAVE_MEMALIGN)
-void *ngx_memalign(size_t alignment, size_t size);
+void *ngx_memalign(size_t alignment, size_t size); // 1 melloc with alignment requirment
 #else
-#define ngx_memalign(alignment, size) ngx_alloc(size)
+#define ngx_memalign(alignment, size) ngx_alloc(size) // 2 using normal ngx_alloc
 #endif
 
 extern ngx_uint_t ngx_pagesize;

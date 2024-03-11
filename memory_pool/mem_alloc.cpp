@@ -2,8 +2,6 @@
 
 static int debug = 1;
 
-
-
 ngx_uint_t ngx_pagesize;
 ngx_uint_t ngx_pagesize_shift;
 ngx_uint_t ngx_cacheline_size;
@@ -21,7 +19,7 @@ void *ngx_alloc(size_t size)
 	return p;
 }
 
-// using ngx_alloc to allocate memory and set to 0
+// using ngx_alloc to allocate memory and set it to 0
 void *ngx_calloc(size_t size)
 {
 	void *p;
@@ -33,8 +31,9 @@ void *ngx_calloc(size_t size)
 	return p;
 }
 
-// melloc with alignment requirment
+// melloc with alignment requirment -> Select based on platform
 #if(NGX_HAVE_POSIX_MEMALIGN)
+// version 1
 void *ngx_memalign(size_t alignment, size_t size)
 {
 	void *p;
@@ -49,6 +48,7 @@ void *ngx_memalign(size_t alignment, size_t size)
 	return p;
 }
 #elif(NGX_HAVE_MEMALIGN)
+// version 2
 void *ngx_memalign(size_t alignment, size_t size)
 {
 	void *p;

@@ -11,6 +11,8 @@ sem_t mutex; // semaphore = 1 equtes mutex;
 void *ticket_agent(void *arg)
 {
 	sem_wait(&mutex); // p(mutex)
+
+	// critical section
 	int t = ticket_amount;
 	if(t>0)
 	{
