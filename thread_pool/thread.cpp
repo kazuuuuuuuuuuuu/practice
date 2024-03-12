@@ -1,6 +1,6 @@
 #include "thread.h"
 
-// Encapsulation -> check the return value mainly
+// wrapper function -> check the return value mainly
 int thread_mutex_create(pthread_mutex_t *mtx)
 {
 	int err;
@@ -13,7 +13,7 @@ int thread_mutex_create(pthread_mutex_t *mtx)
 		return ERROR;		
 	}
 
-	// PTHREAD_MUTEX_ERRORCHECK -> Avoiding deadlocks in simple situations
+	// PTHREAD_MUTEX_ERRORCHECK -> avoid requesting the same lock from the same thread (deadlock)
 	err = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ERRORCHECK);
 	if(err!=0)
 	{
@@ -34,6 +34,7 @@ int thread_mutex_create(pthread_mutex_t *mtx)
 		fprintf(stderr, "pthread_mutexattr_destroy failed: %s\n", strerror(errno));
 		return ERROR;		
 	}	
+
 	return OK;
 }
 
@@ -47,6 +48,7 @@ int thread_mutex_destroy(pthread_mutex_t *mtx)
 		fprintf(stderr, "pthread_mutex_destroy failed: %s\n", strerror(errno));
 		return ERROR;		
 	}	
+
 	return OK;
 }
 
@@ -60,6 +62,7 @@ int thread_mutex_lock(pthread_mutex_t *mtx)
 		fprintf(stderr, "pthread_mutex_lock failed: %s\n", strerror(errno));
 		return ERROR;		
 	}	
+
 	return OK;
 }
 
@@ -73,6 +76,7 @@ int thread_mutex_unlock(pthread_mutex_t *mtx)
 		fprintf(stderr, "pthread_mutex_unlock failed: %s\n", strerror(errno));
 		return ERROR;		
 	}	
+	
 	return OK;
 }
 

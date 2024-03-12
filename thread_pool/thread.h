@@ -16,7 +16,7 @@ typedef uintptr_t uint_t;
 #define OK 0
 #define ERROR -1
 
-// Encapsulation function
+// wrapper function
 int thread_mutex_create(pthread_mutex_t *mtx);
 int thread_mutex_destroy(pthread_mutex_t *mtx);
 int thread_mutex_lock(pthread_mutex_t *mtx);

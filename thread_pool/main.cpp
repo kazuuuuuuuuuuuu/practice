@@ -28,10 +28,8 @@ void task_hanlder3(void *data)
 
 int main(int argc, char const *argv[])
 {
-	thread_pool_t *tp = NULL;
-	
 	// 1 initilaize the thread pool
-	tp = thread_pool_init();
+	thread_pool_t *tp = thread_pool_init();
 	// 2 formulate the task
 	thread_task_t *test1 = thread_task_alloc(0);
 	thread_task_t *test2 = thread_task_alloc(0);
@@ -41,11 +39,11 @@ int main(int argc, char const *argv[])
 	test3->handler = task_hanlder3;
 	((struct test *)test3->ctx)->arg1 = 666;
 	((struct test *)test3->ctx)->arg2 = 888;
-	// 3 post the task to the task queue
+	// 3 push the task to the task queue
 	thread_task_post(tp, test1);
 	thread_task_post(tp, test2);
 	thread_task_post(tp, test3);
-	// 4 destroy thread pool
+	// 4 run the task and destroy thread pool
 	sleep(10);
 	thread_pool_destroy(tp);
 	return 0;
