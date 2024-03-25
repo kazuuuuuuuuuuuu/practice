@@ -9,7 +9,7 @@
 #include <unistd.h>
 
 #define BUFF_SIZE 1024
-
+// udp 加一般使用的阻塞型io
 int main(int argc, char const *argv[])
 {
 	int server_sockfd;
