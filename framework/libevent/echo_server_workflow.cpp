@@ -1,3 +1,4 @@
+// 编译时增加参数 -levent
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -5,14 +6,11 @@
 #include <stdlib.h>
 #include <event.h>
 #include <event2/event.h>
-
 #include <sys/resource.h>	
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/stat.h>
-
-
 #include <unistd.h>
 #include <sys/types.h>
 #include <fcntl.h>

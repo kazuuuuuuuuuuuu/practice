@@ -14,15 +14,15 @@ struct thread_task_s
 {
 	thread_task_t *next; // point to the next node
 	uint_t id; // task id
-	void *ctx; // point to the parameter structure of the callback function
-	void (*handler)(void *data); // callback function used to process task
+	void *ctx; // point to the parameters for the callback function
+	void (*handler)(void *data); // point to the callback function 
 };
 
 // the task queue
 typedef struct 
 {
 	thread_task_t *first;
-	thread_task_t **last; // point to the pointer of a task node
+	thread_task_t **last; // point to the "next" pointer of the last task node
 }thread_pool_queue_t;
 
 #define thread_pool_queue_init(q) (q)->first = NULL;(q)->last = &(q)->first; // &(q)->first == &( (q)->first )

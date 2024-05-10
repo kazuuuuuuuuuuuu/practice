@@ -1,4 +1,5 @@
 /*
+本代码并不完整
 1 创建listenfd 和 保存该fd的结构体
 2 创建epollfd
 3 将listenfd加入到监听事件

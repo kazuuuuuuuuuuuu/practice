@@ -22,7 +22,7 @@ thread_pool_t * thread_pool_init()
 		return NULL;
 	}
 
-	// 2 set the value 
+	// 2 set the value for the thread pool structure
 	thread_pool_init_default(tp, NULL);
 
 	thread_pool_queue_init(&tp->queue);
@@ -53,6 +53,7 @@ thread_pool_t * thread_pool_init()
 	}
 
 	// detach those threads from the main thread
+	// cant use pthread_join 
 	err = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 	if(err!=0)
 	{
@@ -118,6 +119,7 @@ static void *thread_pool_cycle(void *data)
 		// 2 no tasks in the queue -> wait for the signal
 		while(tp->queue.first==NULL)
 		{
+			// cond -> 先解锁mtx 被唤醒后再require mtx
 			if(thread_cond_wait(&tp->cond, &tp->mtx)!=OK)
 			{
 				(void) thread_mutex_unlock(&tp->mtx);

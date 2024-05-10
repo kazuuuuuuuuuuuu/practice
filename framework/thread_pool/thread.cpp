@@ -13,7 +13,7 @@ int thread_mutex_create(pthread_mutex_t *mtx)
 		return ERROR;		
 	}
 
-	// PTHREAD_MUTEX_ERRORCHECK -> avoid requesting the same lock from the same thread (deadlock)
+	// PTHREAD_MUTEX_ERRORCHECK -> avoid the same thread requesting the same lock (deadlock)
 	err = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ERRORCHECK);
 	if(err!=0)
 	{
