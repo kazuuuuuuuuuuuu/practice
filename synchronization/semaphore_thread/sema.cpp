@@ -2,10 +2,11 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <semaphore.h>
+// semaphore = 1 equtes mutex;
 
 // global var
 static int ticket_amount = 2;
-sem_t mutex; // semaphore = 1 equtes mutex;
+sem_t mutex; 
 
 
 void *ticket_agent(void *arg)

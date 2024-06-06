@@ -2,7 +2,7 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <semaphore.h>
-// test for semaphore > 1
+// semaphore > 1 -> Multiple resources available simultaneously
 sem_t road;
 
 

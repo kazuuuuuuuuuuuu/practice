@@ -1,49 +1,69 @@
 #ifndef _THREAD_POOL_H_
 #define _THREAD_POOL_H_
 
+#ifdef  __cplusplus
+extern "C"
+{
+#endif //  __cplusplus
+
 #include "thread.h"
 
-#define DEFAULT_THREADS_NUM 4
-#define DEFAULT_QUEUE_NUM 65535
+constexpr uint_t DEFAULT_THREADS_NUM = 4;
+constexpr uint_t DEFAULT_QUEUE_NUM = 65535;
 
 typedef struct thread_task_s thread_task_t;
+typedef struct thread_pool_queue_s thread_pool_queue_t;
 typedef struct thread_pool_s thread_pool_t;
 
-// the task node 
 struct thread_task_s
 {
-	thread_task_t *next; // point to the next node
-	uint_t id; // task id
-	void *ctx; // point to the parameters for the callback function
-	void (*handler)(void *data); // point to the callback function 
+	thread_task_t* next;
+	uint_t id;
+	void (*handler)(void* data);
+	void* ctx;
+
+	thread_task_s() :
+		next(nullptr), id(-1), handler(nullptr), ctx(nullptr)
+	{
+	}
 };
 
-// the task queue
-typedef struct 
+struct thread_pool_queue_s
 {
-	thread_task_t *first;
-	thread_task_t **last; // point to the "next" pointer of the last task node
-}thread_pool_queue_t;
+	thread_task_t* first;
+	thread_task_t** last;
 
-#define thread_pool_queue_init(q) (q)->first = NULL;(q)->last = &(q)->first; // &(q)->first == &( (q)->first )
+	thread_pool_queue_s() :
+		first(nullptr), last(&first)
+	{
+	}
+};
 
-// the thread pool
 struct thread_pool_s
 {
 	pthread_mutex_t mtx;
 	pthread_cond_t cond;
 
 	thread_pool_queue_t queue;
-	int_t waiting; // the number of tasks to be processed
-	
-	char *name;
-	uint_t threads; // the number of threads
-	int_t max_queue; // the max length of the queue
+	uint_t waiting;
+
+	const char* name;
+	uint_t threads;
+	uint_t max_queue;
+
+	thread_pool_s() :
+		queue(), waiting(0), name("default"), threads(DEFAULT_THREADS_NUM), max_queue(DEFAULT_QUEUE_NUM)
+	{
+	}
 };
 
-thread_task_t *thread_task_alloc(size_t size);
-int_t thread_task_post(thread_pool_t *tp, thread_task_t *task);
-thread_pool_t *thread_pool_init();
-void thread_pool_destroy(thread_pool_t *tp);
+thread_task_t* thread_task_alloc(size_t size);
+int_t thread_task_post(thread_pool_t* tp, thread_task_t* task);
+thread_pool_t* thread_pool_init();
+void thread_pool_destroy(thread_pool_t* tp);
+
+#ifdef  __cplusplus
+}
+#endif //  __cplusplus
 
 #endif

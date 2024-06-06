@@ -4,10 +4,10 @@
 #include <semaphore.h>
 #include <iostream>
 
-// producer-consumer problem (single buffer)
+// producer-consumer problem (one slot buffer)
 // global variable
-sem_t empty;
-sem_t full;
+sem_t empty; // = 1
+sem_t full; // = 0
 
 using std::cout;
 using std::endl;

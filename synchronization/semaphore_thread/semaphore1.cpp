@@ -6,8 +6,8 @@
 
 // synchronization between two threads -> run in a certain order
 // global variable
-sem_t close_door;
-sem_t stop_car;
+sem_t close_door; // = 0
+sem_t stop_car; // = 0
 
 using std::endl;
 using std::cout;

@@ -5,14 +5,14 @@
 #include <iostream>
 
 // producer-consumer problems (bounded-buffer)
+
 // global variable
-// used for synchronization
-sem_t empty;
-sem_t full;
+sem_t empty; // = buff_size
+sem_t full; // = 0
+
 // used for control the critical zone 
-sem_t mutex1; // for all producers
-sem_t mutex2; // for all consumers
-sem_t mutex_cout; // for cout -> it is also a public resource
+sem_t mutex1; // mutex for the buffer
+sem_t mutex_cout; // mutex for cout -> it is also a public resource
 // circular buffer
 int out = 0;
 int in = 0;
@@ -56,7 +56,7 @@ void *consumer(void *argc)
 	{
 		sem_wait(&full);
 		
-		sem_wait(&mutex2);
+		sem_wait(&mutex1);
 
 		product = buf[out];
 		out = (out+1) % buff_size;
@@ -65,7 +65,7 @@ void *consumer(void *argc)
 		cout << "consumer " << pthread_self() % 100 << " picks ["<< product << "] from the buffer " << i << "th time" << endl;
 		sem_post(&mutex_cout);
 
-		sem_post(&mutex2);
+		sem_post(&mutex1);
 
 		sem_post(&empty);
 
@@ -82,7 +82,6 @@ int main(int argc, char const *argv[])
 	sem_init(&empty, 0, buff_size);
 	sem_init(&full, 0, 0);
 	sem_init(&mutex1, 0, 1);
-	sem_init(&mutex2, 0, 1);
 	sem_init(&mutex_cout, 0, 1);
 
 	for(int i=0;i<2;i++)
@@ -101,7 +100,6 @@ int main(int argc, char const *argv[])
 	sem_destroy(&full);
 	sem_destroy(&empty);
 	sem_destroy(&mutex1);
-	sem_destroy(&mutex2);
 	sem_destroy(&mutex_cout);
 	return 0;
 }
